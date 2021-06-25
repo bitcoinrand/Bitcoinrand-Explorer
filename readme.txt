@@ -67,7 +67,7 @@ daemon=1
 paytxfee=0.0002
 deprecatedrpc=accounts
 addresstype=legacy
-addnode=node1.walletbuilders.com
+addnode=node1.bitcoinrand.com
 
 Save the file with the keyboard shortcut ctrl + x.
 
