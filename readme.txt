@@ -25,7 +25,7 @@ sudo apt-get update && sudo apt-get install libdb4.8-dev libdb4.8++-dev -y
 
 Download the Linux daemon for your wallet with the following command:
 
-wget "https://dl.walletbuilders.com/download?customer=84a7e9c17d49ec329a5cf0eda77ad435cbab1df032acc370db&filename=bitcoinrand-daemon-linux.tar.gz" -O bitcoinrand-daemon-linux.tar.gz
+wget "https://github.com/bitcoinrand/bitcoinrand/releases/download/V1.0.0/bitcoinrand-qt-linux.tar.gz" -O bitcoinrand-daemon-linux.tar.gz
 
 Extract the tar file with the following command:
 
@@ -33,7 +33,7 @@ tar -xzvf bitcoinrand-daemon-linux.tar.gz
 
 Download the Linux tools for your wallet with the following command:
 
-wget "https://dl.walletbuilders.com/download?customer=84a7e9c17d49ec329a5cf0eda77ad435cbab1df032acc370db&filename=bitcoinrand-qt-linux.tar.gz" -O bitcoinrand-qt-linux.tar.gz
+wget "https://https://github.com/bitcoinrand/bitcoinrand/releases/download/V1.0.0/bitcoinrand-daemon-linux.tar.gz" -O bitcoinrand-qt-linux.tar.gz
 
 Extract the tar file with the following command:
 
