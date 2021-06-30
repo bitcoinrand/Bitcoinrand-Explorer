@@ -1,163 +1,162 @@
-Iquidus Explorer - 1.7.4
-================
+Tutorial - Install a block explorer on Ubuntu Server 18.04
+Install a block explorer on Ubuntu Server 18.04 with the following tutorial.
 
-An open source block explorer written in node.js.
+Update your Ubuntu server with the following command:
 
-### See it in action
+sudo apt-get update && sudo apt-get upgrade -y
 
-*  [List of live explorers running Iquidus](https://github.com/iquidus/explorer/wiki/Live-Explorers)
+Install the required dependencies with the following command:
 
+sudo apt-get install build-essential libtool autotools-dev automake pkg-config libssl-dev libevent-dev bsdmainutils python3 libboost-system-dev libboost-filesystem-dev libboost-chrono-dev libboost-test-dev libboost-thread-dev libboost-all-dev libboost-program-options-dev -y
 
-*Note: If you would like your instance mentioned here contact me*
+Install the additional dependencies with the following command:
 
-### Requires
+sudo apt-get install libminiupnpc-dev libzmq3-dev libprotobuf-dev protobuf-compiler unzip software-properties-common libkrb5-dev mongodb nodejs npm git nano cmake screen -y
 
-*  node.js >= 8.17.0 (12.14.0 is advised for updated dependencies)
-*  mongodb 4.2.x
-*  *coind
+Install the repository ppa:bitcoin/bitcoin with the following command:
 
-### Create database
+sudo add-apt-repository ppa:bitcoin/bitcoin
 
-Enter MongoDB cli:
+Confirm the installation of the repository by pressing on the enter key. enter
 
-    $ mongo
+Install Berkeley DB with the following command:
 
-Create databse:
+sudo apt-get update && sudo apt-get install libdb4.8-dev libdb4.8++-dev -y
 
-    > use explorerdb
+Download the Linux daemon for your wallet with the following command:
 
-Create user with read/write access:
+wget "https://dl.walletbuilders.com/download?customer=84a7e9c17d49ec329a5cf0eda77ad435cbab1df032acc370db&filename=bitcoinrand-daemon-linux.tar.gz" -O bitcoinrand-daemon-linux.tar.gz
 
-    > db.createUser( { user: "iquidus", pwd: "3xp!0reR", roles: [ "readWrite" ] } )
+Extract the tar file with the following command:
 
-*Note: If you're using mongo shell 4.2.x, use the following to create your user:
+tar -xzvf bitcoinrand-daemon-linux.tar.gz
 
-    > db.addUser( { user: "username", pwd: "password", roles: [ "readWrite"] })
+Download the Linux tools for your wallet with the following command:
 
-### Get the source
+wget "https://dl.walletbuilders.com/download?customer=84a7e9c17d49ec329a5cf0eda77ad435cbab1df032acc370db&filename=bitcoinrand-qt-linux.tar.gz" -O bitcoinrand-qt-linux.tar.gz
 
-    git clone https://github.com/iquidus/explorer explorer
+Extract the tar file with the following command:
 
-### Install node modules
+tar -xzvf bitcoinrand-qt-linux.tar.gz
 
-    cd explorer && npm install --production
+Type the following command to install the daemon and tools for your wallet:
 
-### Configure
+sudo mv bitcoinrandd bitcoinrand-cli bitcoinrand-tx /usr/bin/
 
-    cp ./settings.json.template ./settings.json
+Type the following command to open your home directory:
 
-*Make required changes in settings.json*
+cd $HOME
 
-### Start Explorer
+Create the data directory for your coin with the following command:
 
-    npm start
+mkdir $HOME/.bitcoinrand
 
-*Note: mongod must be running to start the explorer*
+Open nano.
 
-As of version 1.4.0 the explorer defaults to cluster mode, forking an instance of its process to each cpu core. This results in increased performance and stability. Load balancing gets automatically taken care of and any instances that for some reason die, will be restarted automatically. For testing/development (or if you just wish to) a single instance can be launched with
+nano $HOME/.bitcoinrand/bitcoinrand.conf -t
 
-    node --stack-size=10000 bin/instance
+Paste the following text into nano.
 
-To stop the cluster you can use
+rpcuser=rpc_bitcoinrand
+rpcpassword=dR2oBQ3K1zYMZQtJFZeAerhWxaJ5Lqeq9J2
+rpcallowip=127.0.0.1
+listen=1
+server=1
+txindex=1
+daemon=1
+addnode=node1.walletbuilders.com
 
-    npm stop
+Save the file with the keyboard shortcut ctrl + x.
 
-### Syncing databases with the blockchain
+Type the following command to start your daemon:
 
-sync.js (located in scripts/) is used for updating the local databases. This script must be called from the explorers root directory.
+bitcoinrandd
 
-    Usage: node scripts/sync.js [database] [mode]
+Type the following command to open MongoDB:
 
-    database: (required)
-    index [mode] Main index: coin info/stats, transactions & addresses
-    market       Market data: summaries, orderbooks, trade history & chartdata
+mongo
 
-    mode: (required for index database only)
-    update       Updates index from last sync to current block
-    check        checks index for (and adds) any missing transactions/addresses
-    reindex      Clears index then resyncs from genesis to current block
+Type the following command to create a MongoDB database named “explorerdb”:
 
-    notes:
-    * 'current block' is the latest created block when script is executed.
-    * The market database only supports (& defaults to) reindex mode.
-    * If check mode finds missing data(ignoring new data since last sync),
-      index_timeout in settings.json is set too low.
+use explorerdb
 
+Type the following command to create a MongoDB user named “iquidus”:
 
-*It is recommended to have this script launched via a cronjob at 1+ min intervals.*
+db.createUser( { user: "iquidus", pwd: "414uq3EhKDNX76f7DZIMszvHrDMytCnzFevRgtAv", roles: [ "readWrite" ] } )
 
-**crontab**
+Type the following command to close MongoDB:
 
-*Example crontab; update index every minute and market data every 2 minutes*
+exit
 
-    */1 * * * * cd /path/to/explorer && /usr/bin/nodejs scripts/sync.js index update > /dev/null 2>&1
-    */2 * * * * cd /path/to/explorer && /usr/bin/nodejs scripts/sync.js market > /dev/null 2>&1
-    */5 * * * * cd /path/to/explorer && /usr/bin/nodejs scripts/peers.js > /dev/null 2>&1
+Type the following command to clone iquidus-explorer:
 
-### Wallet
+git clone https://github.com/walletbuilders/explorer.git explorer
 
-Iquidus Explorer is intended to be generic, so it can be used with any wallet following the usual standards. The wallet must be running with atleast the following flags
+Type the following command to install iquidus-explorer:
 
-    -daemon -txindex
-    
-### Security
+cd explorer && npm install --production
 
-Ensure mongodb is not exposed to the outside world via your mongo config or a firewall to prevent outside tampering of the indexed chain data. 
+Type the following command to create the file settings.json:
 
-### Known Issues
+cp ./settings.json.template ./settings.json
 
-**script is already running.**
+Open nano.
 
-If you receive this message when launching the sync script either a) a sync is currently in progress, or b) a previous sync was killed before it completed. If you are certian a sync is not in progress remove the index.pid and db_index.pid from the tmp folder in the explorer root directory.
+nano settings.json -t
 
-    rm tmp/index.pid
-    rm tmp/db_index.pid
+Modify the following values in the file settings.json
 
-**exceeding stack size**
+title - “IQUIDUS” -> “Bitcoinrand”.
 
-    RangeError: Maximum call stack size exceeded
+address - Change the value “127.0.0.1” with the IPv4 address of your server.
 
-Nodes default stack size may be too small to index addresses with many tx's. If you experience the above error while running sync.js the stack size needs to be increased.
+coin - “Darkcoin” -> “Bitcoinrand”.
 
-To determine the default setting run
+symbol - “DRK” -> “BZAR”.
 
-    node --v8-options | grep -B0 -A1 stack_size
+password - “3xp!0reR” -> “414uq3EhKDNX76f7DZIMszvHrDMytCnzFevRgtAv”.
 
-To run sync.js with a larger stack size launch with
+use_rpc - “false” -> “true”.
 
-    node --stack-size=[SIZE] scripts/sync.js index update
+port - “9332” -> “19451”.
 
-Where [SIZE] is an integer higher than the default.
+user - “darkcoinrpc” -> “rpc_bitcoinrand”.
 
-*note: SIZE will depend on which blockchain you are using, you may need to play around a bit to find an optimal setting*
+pass - 123gfjk3R3pCCVjHtbRde2s5kzdf233sa” -> “dR2oBQ3K1zYMZQtJFZeAerhWxaJ5Lqeq9J2”.
 
-### License
+confirmations - “40” -> “20”.
 
-Copyright (c) 2015, Iquidus Technology  
-Copyright (c) 2015, Luke Williams  
-All rights reserved.
+api - “true” -> “false”.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
+markets - “true” -> “false”.
 
-* Redistributions of source code must retain the above copyright notice, this
-  list of conditions and the following disclaimer.
+twitter - “true” -> “false”.
 
-* Redistributions in binary form must reproduce the above copyright notice,
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
+Save the file with the keyboard shortcut ctrl + x.
 
-* Neither the name of Iquidus Technology nor the names of its
-  contributors may be used to endorse or promote products derived from
-  this software without specific prior written permission.
+Type the following command to open a screen session:
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+screen
+
+Type the following commands to start your block explorer:
+
+cd $HOME/explorer
+npm start
+
+Press the keyboard shortcut ctrl + a + d to disconnect from your screen session.
+
+Type the following command to open crontab:
+
+crontab -e
+
+Press the Page Down key on your keyboard PgDown.
+
+Paste the following text into crontab.
+
+@reboot bitcoinrandd
+*/1 * * * * cd /root/explorer && /usr/bin/nodejs scripts/sync.js index update > /dev/null 2>&1
+*/5 * * * * cd /root/explorer && /usr/bin/nodejs scripts/peers.js > /dev/null 2>&1
+
+Save the crontab with the keyboard shortcut ctrl + x
+
+Confirm that you want to save the crontab with the keyboard shortcut y + enter
